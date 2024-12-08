@@ -15,6 +15,16 @@ namespace Beauty_Salon.Model
     
     public partial class Number3Entities : DbContext
     {
+        private static Number3Entities entities;
+
+        public static Number3Entities GetContext()
+        {
+            if (entities == null)
+            {
+                entities = new Number3Entities();
+            }
+            return entities;
+        }
         public Number3Entities()
             : base("name=Number3Entities")
         {

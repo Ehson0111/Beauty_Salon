@@ -64,18 +64,32 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="AdminLoginWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="AdminLoginWindow.xaml.cs">
+      <DependentUpon>AdminLoginWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Converter\DiscountBackgroundConverter.cs" />
+    <Compile Include="Converter\DiscountStrikethroughConverter.cs" />
+    <Compile Include="Converter\DiscountVisibilityConverter.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Pages\Service_page.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Model\Client.cs">
@@ -129,6 +143,9 @@
     <Compile Include="Model\Tag.cs">
       <DependentUpon>Model1.tt</DependentUpon>
     </Compile>
+    <Compile Include="Pages\Service_page.xaml.cs">
+      <DependentUpon>Service_page.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -163,6 +180,42 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Images\122454.png" />
+    <Resource Include="Images\96.png" />
+    <Resource Include="Images\face.png" />
+    <Resource Include="Images\makeup.jpg" />
+    <Resource Include="Images\man.png" />
+    <Resource Include="Images\mask.jpeg" />
+    <Resource Include="Images\piling.jpg" />
+    <Resource Include="Images\soliarij.jpg" />
+    <Resource Include="Images\брови.png" />
+    <Resource Include="Images\Гречишный массаж.jpg" />
+    <Resource Include="Images\Декорирование нарощенных ресниц стразами.jpg" />
+    <Resource Include="Images\Демакияж.jpg" />
+    <Resource Include="Images\Депиляция воском.jpg" />
+    <Resource Include="Images\Европейский маникюр.jpg" />
+    <Resource Include="Images\ИК-сауна.jpg" />
+    <Resource Include="Images\Классический маникюр.png" />
+    <Resource Include="Images\Комбинированный маникюр.jpg" />
+    <Resource Include="Images\Контурная пластика.jpg" />
+    <Resource Include="Images\массаж.jpg" />
+    <Resource Include="Images\Мезотерапия.jpg" />
+    <Resource Include="Images\Моделирование ресниц.jpg" />
+    <Resource Include="Images\ногти.png" />
+    <Resource Include="Images\Окрашивание бровей.jpg" />
+    <Resource Include="Images\Парафинотерапия.jpg" />
+    <Resource Include="Images\Покрытие ногтей гель-лаком.jpg" />
+    <Resource Include="Images\Полировка ногтей.jpg" />
+    <Resource Include="Images\Прессотерапия.jpg" />
+    <Resource Include="Images\Прокол ушей пистолетом.png" />
+    <Resource Include="Images\Ресницы.png" />
+    <Resource Include="Images\Снятие ресниц.jpg" />
+    <Resource Include="Images\Стоун-терапия.jpg" />
+    <Resource Include="Images\стрижка.png" />
+    <Resource Include="Images\Укрепление ногтей гелем.jpg" />
+    <Resource Include="Images\Шугаринг.jpg" />
+    <Resource Include="Images\Экспресс SPA.png" />
+    <Resource Include="Images\Экспресс-педикюр.jpg" />
     <Content Include="Model\Model1.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Model1.Context.cs</LastGenOutput>
@@ -177,5 +230,6 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

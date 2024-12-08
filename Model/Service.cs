@@ -20,7 +20,7 @@ namespace Beauty_Salon.Model
             this.ClientService = new HashSet<ClientService>();
             this.ServicePhoto = new HashSet<ServicePhoto>();
         }
-    
+
         public int ID { get; set; }
         public string Title { get; set; }
         public decimal Cost { get; set; }
@@ -28,7 +28,10 @@ namespace Beauty_Salon.Model
         public string Description { get; set; }
         public Nullable<double> Discount { get; set; }
         public string MainImagePath { get; set; }
-    
+
+        public decimal DiscountedCost { get; set; }
+        public string DiscountDescription { get; set; }
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<ClientService> ClientService { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

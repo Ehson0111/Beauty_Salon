@@ -5,8 +5,27 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Beauty_Salon"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-        
-    </Grid>
+       Title="MainWindow" Height="450" Width="800" MinHeight="450" MinWidth="800" Background="White">
+
+    <Border BorderThickness="5" BorderBrush="White">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="12*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Background="Gray">
+                <!-- Контент для первой строки -->
+            </StackPanel>
+
+            <Frame Grid.Row="1" x:Name="frame" Height="auto" Width="auto" LoadCompleted="frame_LoadCompleted">
+                <!-- Контент для второго ряда, если необходимо -->
+            </Frame>
+
+            <StackPanel Grid.Row="2" Background="Gray">
+                <!-- Контент для третьей строки -->
+            </StackPanel>
+        </Grid>
+    </Border>
 </Window>

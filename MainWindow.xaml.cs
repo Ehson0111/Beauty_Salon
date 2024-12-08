@@ -23,6 +23,16 @@ namespace Beauty_Salon
         public MainWindow()
         {
             InitializeComponent();
+            frame.Content = new Pages.Service_page(frame);
+        }
+        private void frame_Navigated(object sender, NavigationEventArgs e)
+        {
+
+        }
+
+        private void frame_LoadCompleted(object sender, NavigationEventArgs e)
+        {
+
         }
     }
 }
