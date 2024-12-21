@@ -4,7 +4,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Beauty_Salon.Model;
-using Beauty_Salon.Windows;
 
 namespace Beauty_Salon.Pages
 {
@@ -219,7 +218,6 @@ namespace Beauty_Salon.Pages
         {
 
             NavigationService.Navigate(new AddingAndEditingServices(null));
-            //MessageBox.Show("Добавление услуги еще не реализовано.");
         }
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
@@ -252,7 +250,6 @@ namespace Beauty_Salon.Pages
             if (servicesList.SelectedItem is Service selectedService)
             {
                 NavigationService.Navigate(new AddingAndEditingServices(selectedService));
-                MessageBox.Show("Обновление услуги еще не реализовано.");
             }
             else
             {
