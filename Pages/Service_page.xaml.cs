@@ -39,7 +39,6 @@ namespace Beauty_Salon.Pages
                     service.DiscountedCost = service.Discount.HasValue && service.Discount > 0
                         ? Math.Round(service.Cost - (service.Cost * (decimal)service.Discount), 2)
                         : service.Cost;
-
                     service.DiscountDescription = service.Discount > 0
                         ? $"Скидка: {service.Discount:P0}"
                         : "Без скидки";
@@ -216,7 +215,8 @@ namespace Beauty_Salon.Pages
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
-            // Реализуйте логику добавления услуги здесь
+
+            //NavigationService.Navigate(new AddingAndEditingServices(null));
             MessageBox.Show("Добавление услуги еще не реализовано.");
         }
 
@@ -249,7 +249,7 @@ namespace Beauty_Salon.Pages
         {
             if (servicesList.SelectedItem is Service selectedService)
             {
-                // Реализуйте логику обновления услуги здесь
+                //NavigationService.Navigate(new AddingAndEditingServices(selectedService));
                 MessageBox.Show("Обновление услуги еще не реализовано.");
             }
             else

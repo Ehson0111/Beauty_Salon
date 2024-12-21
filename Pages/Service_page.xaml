@@ -4,9 +4,18 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Beauty_Salon.Pages"
+      xmlns:converter="clr-namespace:Beauty_Salon.Converter"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800" 
       Title="Service_page" Background="White" Loaded="Page_Loaded">
+
+    <!-- Ресурсы страницы -->
+    <Page.Resources>
+        <converter:PriceFormatterConverter x:Key="PriceFormatterConverter" />
+        <converter:DiscountStrikethroughConverter x:Key="DiscountStrikethroughConverter" />
+        <converter:DiscountBackgroundConverter x:Key="DiscountBackgroundConverter" />
+    </Page.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -62,10 +71,13 @@
                             <!-- Описание услуги -->
                             <StackPanel Orientation="Vertical" Margin="5" Width="400">
                                 <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="16" />
-                                <StackPanel Orientation="Horizontal" Margin="5">
-                                    <TextBlock Text="{Binding Cost, StringFormat={}{0} руб.}" TextDecorations="Strikethrough" Visibility="{Binding DiscountVisibility}" />
-                                    <TextBlock Text="{Binding DiscountedCost, StringFormat={}{0} руб.}" Foreground="Red" Margin="10,0,0,0" />
-                                </StackPanel>
+                                <!-- Оригинальная цена с перечеркиванием -->
+                                <TextBlock Text="{Binding Cost, Converter={StaticResource PriceFormatterConverter}}" 
+                                           TextDecorations="{Binding Discount, Converter={StaticResource DiscountStrikethroughConverter}}" />
+                                <!-- Цена со скидкой -->
+                                <Border Background="{Binding Discount, Converter={StaticResource DiscountBackgroundConverter}}">
+                                    <TextBlock Text="{Binding DiscountedCost, Converter={StaticResource PriceFormatterConverter}}" />
+                                </Border>
                                 <TextBlock Text="{Binding Duration, StringFormat={}{0} минут}" Foreground="Gray" />
                                 <TextBlock Text="{Binding DiscountDescription}" Foreground="Green" FontSize="12" />
                             </StackPanel>
