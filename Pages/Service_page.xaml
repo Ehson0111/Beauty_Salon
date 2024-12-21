@@ -14,6 +14,7 @@
         <converter:PriceFormatterConverter x:Key="PriceFormatterConverter" />
         <converter:DiscountStrikethroughConverter x:Key="DiscountStrikethroughConverter" />
         <converter:DiscountBackgroundConverter x:Key="DiscountBackgroundConverter" />
+        <converter:DiscountToVisibilityConverter x:Key="DiscountToVisibilityConverter" />
     </Page.Resources>
 
     <Grid>
@@ -66,18 +67,29 @@
                     <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="5" Margin="5">
                         <StackPanel Orientation="Horizontal" Margin="5">
                             <!-- Изображение -->
-                            <Image Width="100" Height="100" Margin="5" Stretch="Uniform" Source="{Binding ImageSource}" />
+                            <Image Width="100" Height="100" Margin="5"  Source="{Binding ImageSource}"  Stretch="Uniform"  ToolTip="{Binding Title}" />
 
                             <!-- Описание услуги -->
                             <StackPanel Orientation="Vertical" Margin="5" Width="400">
                                 <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="16" />
-                                <!-- Оригинальная цена с перечеркиванием -->
-                                <TextBlock Text="{Binding Cost, Converter={StaticResource PriceFormatterConverter}}" 
-                                           TextDecorations="{Binding Discount, Converter={StaticResource DiscountStrikethroughConverter}}" />
-                                <!-- Цена со скидкой -->
-                                <Border Background="{Binding Discount, Converter={StaticResource DiscountBackgroundConverter}}">
-                                    <TextBlock Text="{Binding DiscountedCost, Converter={StaticResource PriceFormatterConverter}}" />
-                                </Border>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <!-- Оригинальная цена с перечеркиванием -->
+                                    <TextBlock Text="{Binding Cost, Converter={StaticResource PriceFormatterConverter}}" 
+                                   TextDecorations="{Binding Discount, Converter={StaticResource DiscountStrikethroughConverter}}" 
+                                   Margin="0,0,5,0" />
+
+                                    <!-- Цена со скидкой, скрывается если скидки нет -->
+                                    <TextBlock Text="{Binding DiscountedCost, Converter={StaticResource PriceFormatterConverter}}"
+                                        Visibility="{Binding Discount, Converter={StaticResource DiscountToVisibilityConverter}}">
+                                    <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Background" Value="{Binding Discount, Converter={StaticResource DiscountBackgroundConverter}}" />
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </StackPanel>
+
                                 <TextBlock Text="{Binding Duration, StringFormat={}{0} минут}" Foreground="Gray" />
                                 <TextBlock Text="{Binding DiscountDescription}" Foreground="Green" FontSize="12" />
                             </StackPanel>
@@ -85,6 +97,7 @@
                     </Border>
                 </DataTemplate>
             </ListBox.ItemTemplate>
+
         </ListBox>
 
         <!-- Пагинация -->
@@ -119,8 +132,8 @@
             <Button x:Name="btnAdd" Height="30" Grid.Column="1"  Content="Добавить" Margin="5,5,5,0" Click="btnAdd_Click" VerticalAlignment="Top" IsEnabled="False" />
             <Button x:Name="btnUpdate" Height="30"  Grid.Column="2"  Content="Редактировать" Margin="5" Click="btnUpdate_Click" IsEnabled="False" />
             <Button x:Name="btnAdmin" Height="30"  Grid.Column="0" Content="Режим администратора" Margin="5" Click="btnAdmin_Click" />
-            <Button x:Name="btnWrite" Height="30"  Grid.Column="4" Content="Запись клиента" Margin="5"  />
-            <Button x:Name="btnRecords" Height="30"  Grid.Column="5" Content="Ближайшие записи " Margin="5"  />
+            <Button x:Name="btnWrite" Height="30"  Grid.Column="4" Content="Запись клиента" Margin="5" Click="btnWrite_Click"  />
+            <Button x:Name="btnRecords" Height="30"  Grid.Column="5" Content="Ближайшие записи " Margin="5" Click="btnRecords_Click"  />
         </Grid>
     </Grid>
 </Page>

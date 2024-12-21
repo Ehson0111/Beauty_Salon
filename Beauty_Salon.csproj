@@ -82,6 +82,7 @@
     </Compile>
     <Compile Include="Converter\DiscountBackgroundConverter.cs" />
     <Compile Include="Converter\DiscountStrikethroughConverter.cs" />
+    <Compile Include="Converter\DiscountToVisibilityConverter.cs" />
     <Compile Include="Converter\DiscountVisibilityConverter.cs" />
     <Compile Include="Converter\PriceFormatterConverter.cs" />
     <Compile Include="MainWindow.xaml.cs">
@@ -92,7 +93,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Pages\CustomerRecord.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Pages\Service_page.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\UpcomingEntries.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -152,8 +161,14 @@
     <Compile Include="Pages\AddingAndEditingServices.xaml.cs">
       <DependentUpon>AddingAndEditingServices.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\CustomerRecord.xaml.cs">
+      <DependentUpon>CustomerRecord.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Service_page.xaml.cs">
       <DependentUpon>Service_page.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\UpcomingEntries.xaml.cs">
+      <DependentUpon>UpcomingEntries.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
@@ -189,42 +204,42 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\122454.png" />
-    <Resource Include="Images\96.png" />
-    <Resource Include="Images\face.png" />
-    <Resource Include="Images\makeup.jpg" />
-    <Resource Include="Images\man.png" />
-    <Resource Include="Images\mask.jpeg" />
-    <Resource Include="Images\piling.jpg" />
-    <Resource Include="Images\soliarij.jpg" />
-    <Resource Include="Images\брови.png" />
-    <Resource Include="Images\Гречишный массаж.jpg" />
-    <Resource Include="Images\Декорирование нарощенных ресниц стразами.jpg" />
-    <Resource Include="Images\Демакияж.jpg" />
-    <Resource Include="Images\Депиляция воском.jpg" />
-    <Resource Include="Images\Европейский маникюр.jpg" />
-    <Resource Include="Images\ИК-сауна.jpg" />
-    <Resource Include="Images\Классический маникюр.png" />
-    <Resource Include="Images\Комбинированный маникюр.jpg" />
-    <Resource Include="Images\Контурная пластика.jpg" />
-    <Resource Include="Images\массаж.jpg" />
-    <Resource Include="Images\Мезотерапия.jpg" />
-    <Resource Include="Images\Моделирование ресниц.jpg" />
-    <Resource Include="Images\ногти.png" />
-    <Resource Include="Images\Окрашивание бровей.jpg" />
-    <Resource Include="Images\Парафинотерапия.jpg" />
-    <Resource Include="Images\Покрытие ногтей гель-лаком.jpg" />
-    <Resource Include="Images\Полировка ногтей.jpg" />
-    <Resource Include="Images\Прессотерапия.jpg" />
-    <Resource Include="Images\Прокол ушей пистолетом.png" />
-    <Resource Include="Images\Ресницы.png" />
-    <Resource Include="Images\Снятие ресниц.jpg" />
-    <Resource Include="Images\Стоун-терапия.jpg" />
-    <Resource Include="Images\стрижка.png" />
-    <Resource Include="Images\Укрепление ногтей гелем.jpg" />
-    <Resource Include="Images\Шугаринг.jpg" />
-    <Resource Include="Images\Экспресс SPA.png" />
-    <Resource Include="Images\Экспресс-педикюр.jpg" />
+    <Resource Include="Images\Услуги салона красоты\122454.png" />
+    <Resource Include="Images\Услуги салона красоты\96.png" />
+    <Resource Include="Images\Услуги салона красоты\face.png" />
+    <Resource Include="Images\Услуги салона красоты\makeup.jpg" />
+    <Resource Include="Images\Услуги салона красоты\man.png" />
+    <Resource Include="Images\Услуги салона красоты\mask.jpeg" />
+    <Resource Include="Images\Услуги салона красоты\piling.jpg" />
+    <Resource Include="Images\Услуги салона красоты\soliarij.jpg" />
+    <Resource Include="Images\Услуги салона красоты\брови.png" />
+    <Resource Include="Images\Услуги салона красоты\Гречишный массаж.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Декорирование нарощенных ресниц стразами.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Демакияж.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Депиляция воском.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Европейский маникюр.jpg" />
+    <Resource Include="Images\Услуги салона красоты\ИК-сауна.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Классический маникюр.png" />
+    <Resource Include="Images\Услуги салона красоты\Комбинированный маникюр.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Контурная пластика.jpg" />
+    <Resource Include="Images\Услуги салона красоты\массаж.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Мезотерапия.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Моделирование ресниц.jpg" />
+    <Resource Include="Images\Услуги салона красоты\ногти.png" />
+    <Resource Include="Images\Услуги салона красоты\Окрашивание бровей.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Парафинотерапия.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Покрытие ногтей гель-лаком.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Полировка ногтей.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Прессотерапия.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Прокол ушей пистолетом.png" />
+    <Resource Include="Images\Услуги салона красоты\Ресницы.png" />
+    <Resource Include="Images\Услуги салона красоты\Снятие ресниц.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Стоун-терапия.jpg" />
+    <Resource Include="Images\Услуги салона красоты\стрижка.png" />
+    <Resource Include="Images\Услуги салона красоты\Укрепление ногтей гелем.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Шугаринг.jpg" />
+    <Resource Include="Images\Услуги салона красоты\Экспресс SPA.png" />
+    <Resource Include="Images\Услуги салона красоты\Экспресс-педикюр.jpg" />
     <Content Include="Model\Model1.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Model1.Context.cs</LastGenOutput>

@@ -40,7 +40,8 @@ namespace Beauty_Salon.Pages
                     service.DiscountedCost = service.Discount.HasValue && service.Discount > 0
                         ? Math.Round(service.Cost - (service.Cost * (decimal)service.Discount), 2)
                         : service.Cost;
-                    service.DiscountDescription = service.Discount > 0
+
+                    service.DiscountDescription = service.Discount.HasValue && service.Discount > 0
                         ? $"Скидка: {service.Discount:P0}"
                         : "Без скидки";
                 }
@@ -257,6 +258,16 @@ namespace Beauty_Salon.Pages
             {
                 MessageBox.Show("Пожалуйста, выберите услугу для обновления.");
             }
+        }
+
+        private void btnWrite_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationService.Navigate(new CustomerRecord());
+        }
+
+        private void btnRecords_Click(object sender, RoutedEventArgs e)
+        {
+            NavigationService.Navigate(new UpcomingEntries());
         }
     }
 }
