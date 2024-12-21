@@ -8,9 +8,11 @@ namespace Beauty_Salon.Windows
 {
     public partial class AddingAndEditingServices : Window
     {
-        public AddingAndEditingServices()
+        public int ServiceID;
+        public AddingAndEditingServices(int serviceID)
         {
             InitializeComponent();
+            ServiceID = serviceID;
         }
 
         // Event handler for selecting the main image
