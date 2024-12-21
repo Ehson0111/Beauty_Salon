@@ -1,108 +1,173 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
+using Beauty_Salon.Model;
 
-namespace Beauty_Salon.Windows
+namespace Beauty_Salon.Pages
 {
-    public partial class AddingAndEditingServices : Window
+    public partial class AddingAndEditingServices : Page
     {
-        public int ServiceID;
-        public AddingAndEditingServices(int serviceID)
+        private Service _service; // Сервис для редактирования или добавления
+        private bool isEditMode = false; // Флаг для проверки редактирования
+
+        public AddingAndEditingServices(Service service)
         {
             InitializeComponent();
-            ServiceID = serviceID;
+
+            if (service != null)
+            {
+                isEditMode = true;
+                _service = service;
+                LoadServiceData();
+            }
+            else
+            {
+                _service = new Service();
+            }
         }
 
-        // Event handler for selecting the main image
+        private void LoadServiceData()
+        {
+            tbTitle.Text = _service.Title;
+            tbCost.Text = _service.Cost.ToString();
+            tbDuration.Text = _service.DurationInSeconds.ToString(); // DurationInSeconds
+            tbDescription.Text = _service.Description;
+            tbDiscount.Text = _service.Discount?.ToString() ?? "0";
+
+            // Загрузка основного изображения
+            if (!string.IsNullOrEmpty(_service.MainImagePath))
+            {
+                imgMain.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(_service.FullImagePath));
+            }
+
+            // Загрузка дополнительных изображений
+            spAdditionalImages.Children.Clear();
+            foreach (var imagePath in _service.ServicePhoto.Select(p => p.PhotoPath))
+            {
+                var image = new System.Windows.Controls.Image
+                {
+                    Width = 50,
+                    Height = 50,
+                    Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(imagePath))
+                };
+                spAdditionalImages.Children.Add(image);
+            }
+        }
+
         private void BtnSelectMainImage_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
-            {
-                Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp"
-            };
-
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.gif";
             if (openFileDialog.ShowDialog() == true)
             {
-                // Load the selected image
+                _service.MainImagePath = openFileDialog.FileName;
                 imgMain.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(openFileDialog.FileName));
             }
         }
 
-        // Event handler for adding an additional image
         private void BtnAddAdditionalImage_Click(object sender, RoutedEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog
-            {
-                Filter = "Image Files|*.jpg;*.jpeg;*.png;*.bmp"
-            };
-
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.gif";
             if (openFileDialog.ShowDialog() == true)
             {
-                // Add the selected image to the additional images stack panel
-                Image newImage = new Image
+                var servicePhoto = new ServicePhoto
                 {
-                    Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(openFileDialog.FileName)),
-                    Width = 100,
-                    Height = 100,
-                    Margin = new Thickness(5)
+                    PhotoPath = openFileDialog.FileName,
+                    ServiceID = _service.ID // Привязка к сервису
                 };
-                spAdditionalImages.Children.Add(newImage);
+
+                _service.ServicePhoto.Add(servicePhoto);
+                var image = new System.Windows.Controls.Image
+                {
+                    Width = 50,
+                    Height = 50,
+                    Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(openFileDialog.FileName))
+                };
+                spAdditionalImages.Children.Add(image);
             }
         }
 
-        // Event handler for removing the last additional image
         private void BtnRemoveAdditionalImage_Click(object sender, RoutedEventArgs e)
         {
-            if (spAdditionalImages.Children.Count > 0)
+            if (_service.ServicePhoto.Count > 0)
             {
+                var lastImage = _service.ServicePhoto.Last();
+                _service.ServicePhoto.Remove(lastImage);
                 spAdditionalImages.Children.RemoveAt(spAdditionalImages.Children.Count - 1);
             }
         }
 
-        // Event handler for saving the service details
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
-            string title = tbTitle.Text;
-            string costText = tbCost.Text;
-            string durationText = tbDuration.Text;
-            string description = tbDescription.Text;
-            string discountText = tbDiscount.Text;
-
-            if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(costText) || string.IsNullOrWhiteSpace(durationText))
+            if (ValidateFields())
             {
-                MessageBox.Show("Пожалуйста, заполните все обязательные поля.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
+                _service.Title = tbTitle.Text;
+                _service.Cost = decimal.Parse(tbCost.Text);
+                _service.DurationInSeconds = int.Parse(tbDuration.Text); // DurationInSeconds
+                _service.Description = tbDescription.Text;
 
-            if (!decimal.TryParse(costText, out decimal cost) || cost <= 0)
-            {
-                MessageBox.Show("Введите корректную стоимость услуги.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
+                if (!string.IsNullOrEmpty(tbDiscount.Text))
+                {
+                    _service.Discount = double.Parse(tbDiscount.Text);
+                }
+                else
+                {
+                    _service.Discount = 0;
+                }
 
-            if (!int.TryParse(durationText, out int duration) || duration <= 0)
-            {
-                MessageBox.Show("Введите корректную длительность услуги.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
+                try
+                {
+                    using (var context = Number3Entities.GetContext())
+                    {
+                        if (!isEditMode)
+                        {
+                            if (context.Service.Any(s => s.Title == _service.Title))
+                            {
+                                MessageBox.Show("Услуга с таким названием уже существует.");
+                                return;
+                            }
 
-            if (!string.IsNullOrWhiteSpace(discountText) && (!decimal.TryParse(discountText, out decimal discount) || discount < 0 || discount > 100))
-            {
-                MessageBox.Show("Введите корректную скидку (от 0 до 100%).", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
-                return;
-            }
+                            context.Service.Add(_service);
+                        }
 
-            // Perform save logic here (e.g., save to database)
-            MessageBox.Show("Услуга успешно сохранена!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
-            this.Close();
+                        context.SaveChanges();
+                        MessageBox.Show("Услуга сохранена.");
+                        NavigationService.GoBack();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка сохранения: {ex.Message}");
+                }
+            }
         }
 
-        // Event handler for canceling
+        private bool ValidateFields()
+        {
+            // Валидация полей
+            if (string.IsNullOrEmpty(tbTitle.Text) || string.IsNullOrEmpty(tbCost.Text) || string.IsNullOrEmpty(tbDuration.Text))
+            {
+                MessageBox.Show("Все обязательные поля должны быть заполнены.");
+                return false;
+            }
+
+            if (!int.TryParse(tbDuration.Text, out int duration) || duration <= 0 || duration > 240)
+            {
+                MessageBox.Show("Длительность услуги должна быть положительным числом и не превышать 4 часов.");
+                return false;
+            }
+
+            return true;
+        }
+
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            NavigationService.GoBack();
         }
     }
 }
