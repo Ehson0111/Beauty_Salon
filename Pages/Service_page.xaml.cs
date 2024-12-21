@@ -24,6 +24,7 @@ namespace Beauty_Salon.Pages
         {
             LoadServices();
         }
+
         private void LoadServices()
         {
             UpdateAdminControlsVisibility(); // Устанавливаем начальную видимость контролов
@@ -35,24 +36,17 @@ namespace Beauty_Salon.Pages
                 // Применяем скидки для отображения измененной стоимости
                 foreach (var service in allServices)
                 {
-                    if (service.Discount.HasValue && service.Discount > 0)
-                    {
-                        service.DiscountedCost = service.Cost - (service.Cost * (decimal)service.Discount);
-                        service.DiscountDescription = $"Скидка: {service.Discount:P0}";
-                    }
-                    else
-                    {
-                        service.DiscountedCost = service.Cost;
-                        service.DiscountDescription = "Без скидки";
-                    }
+                    service.DiscountedCost = service.Discount.HasValue && service.Discount > 0
+                        ? Math.Round(service.Cost - (service.Cost * (decimal)service.Discount), 2)
+                        : service.Cost;
 
-                    // Форматирование стоимости с двумя знаками после запятой
-                    service.Cost = Math.Round(service.Cost, 2);
-                    service.DiscountedCost = Math.Round(service.DiscountedCost, 2);
+                    service.DiscountDescription = service.Discount > 0
+                        ? $"Скидка: {service.Discount:P0}"
+                        : "Без скидки";
                 }
 
-                filteredServices = allServices;
-                DisplayPage();
+                ApplyFilters(); // Применяем фильтры после загрузки
+                DisplayPage(); // Отображаем данные
             }
             catch (Exception ex)
             {
@@ -62,13 +56,43 @@ namespace Beauty_Salon.Pages
 
         private void DisplayPage()
         {
-            UpdateServiceList();
-            UpdatePageControls();
+            int totalRecords = filteredServices.Count;
+            int totalPages = (int)Math.Ceiling((double)totalRecords / pageSize);
 
-            // Обновление текста общего числа записей
-            recordCountText.Text = $"Всего записей: {filteredServices.Count}";
+            // Получаем текущую страницу данных
+            var pagedServices = filteredServices
+                .Skip((currentPage - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            servicesList.ItemsSource = pagedServices; // Отображаем записи
+
+            // Обновление текста с информацией о количестве записей
+            recordCountText.Text = $"{currentPage} из {totalPages}";
+
+            // Обновление состояния кнопок навигации
+            btnBack.IsEnabled = currentPage > 1;
+            btnNext.IsEnabled = currentPage < totalPages;
         }
 
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentPage > 1)
+            {
+                currentPage--;
+                DisplayPage();
+            }
+        }
+
+        private void NextButton_Click(object sender, RoutedEventArgs e)
+        {
+            int totalPages = (int)Math.Ceiling((double)filteredServices.Count / pageSize);
+            if (currentPage < totalPages)
+            {
+                currentPage++;
+                DisplayPage();
+            }
+        }
 
         private List<Service> GetServicesFromDatabase()
         {
@@ -86,107 +110,91 @@ namespace Beauty_Salon.Pages
             }
         }
 
-        private void UpdateServiceList()
-        {
-            // Обновляем данные в ListBox
-            servicesList.ItemsSource = filteredServices.Skip((currentPage - 1) * pageSize).Take(pageSize).ToList();
-        }
-
-        private void UpdatePageControls()
-        {
-            btnBack.IsEnabled = currentPage > 1;
-            btnNext.IsEnabled = currentPage < Math.Ceiling((double)filteredServices.Count / pageSize);
-        }
-
         private void tbSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
-            string searchText = tbSearch.Text.ToLower();
-
-            filteredServices = allServices
-                .Where(s => s.Title.ToLower().Contains(searchText))
-                .ToList();
-
-            currentPage = 1; // Сброс текущей страницы при изменении фильтра
+            ApplyFilters(); // Применяем фильтры при изменении текста в поиске
+            currentPage = 1; // Сброс текущей страницы
             DisplayPage();
         }
 
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (cbSort.SelectedItem is ComboBoxItem selectedItem)
-            {
-                switch (selectedItem.Tag)
-                {
-                    case "1": // По возрастанию стоимости
-                        filteredServices = filteredServices.OrderBy(s => s.Cost).ToList();
-                        break;
-                    case "2": // По убыванию стоимости
-                        filteredServices = filteredServices.OrderByDescending(s => s.Cost).ToList();
-                        break;
-                    default: // Без сортировки
-                        filteredServices = allServices;
-                        break;
-                }
-
-                currentPage = 1; // Сброс текущей страницы при изменении сортировки
-                DisplayPage();
-            }
+            ApplyFilters(); // Применяем фильтры при изменении сортировки
+            currentPage = 1; // Сброс текущей страницы
+            DisplayPage();
         }
 
         private void Type_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            ApplyFilters();
+            currentPage = 1; // Сброс текущей страницы
+            DisplayPage();
+        }
+
+        private void ApplyFilters()
+        {
+            string searchText = tbSearch.Text.ToLower();
+            filteredServices = allServices
+                .Where(s => s.Title.ToLower().Contains(searchText))
+                .ToList();
+
             if (cbFilter.SelectedItem is ComboBoxItem selectedItem)
             {
-                double minDiscount = 0, maxDiscount = 1;
-
-                switch (selectedItem.Tag)
-                {
-                    case "1":
-                        minDiscount = 0;
-                        maxDiscount = 0.05;
-                        break;
-                    case "2":
-                        minDiscount = 0.05;
-                        maxDiscount = 0.15;
-                        break;
-                    case "3":
-                        minDiscount = 0.15;
-                        maxDiscount = 0.30;
-                        break;
-                    case "4":
-                        minDiscount = 0.30;
-                        maxDiscount = 0.70;
-                        break;
-                    case "5":
-                        minDiscount = 0.70;
-                        maxDiscount = 1;
-                        break;
-                }
-
-                filteredServices = allServices
-                    .Where(s => s.Discount >= minDiscount && s.Discount <= maxDiscount)
-                    .ToList();
-
-                currentPage = 1; // Сброс текущей страницы при изменении фильтра
-                DisplayPage();
+                filteredServices = FilterByDiscount(filteredServices, selectedItem);
             }
-        }
 
-        private void BackButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (currentPage > 1)
+            if (cbSort.SelectedItem is ComboBoxItem sortItem)
             {
-                currentPage--;
-                DisplayPage();
+                filteredServices = SortServices(filteredServices, sortItem);
             }
         }
-        private void NextButton_Click(object sender, RoutedEventArgs e)
+
+        private List<Service> FilterByDiscount(List<Service> services, ComboBoxItem selectedItem)
         {
-            if (currentPage < Math.Ceiling((double)filteredServices.Count / pageSize))
+            double minDiscount = 0, maxDiscount = 1;
+
+            switch (selectedItem.Tag)
             {
-                currentPage++;
-                DisplayPage();
+                case "1":
+                    minDiscount = 0;
+                    maxDiscount = 0.05;
+                    break;
+                case "2":
+                    minDiscount = 0.05;
+                    maxDiscount = 0.15;
+                    break;
+                case "3":
+                    minDiscount = 0.15;
+                    maxDiscount = 0.30;
+                    break;
+                case "4":
+                    minDiscount = 0.30;
+                    maxDiscount = 0.70;
+                    break;
+                case "5":
+                    minDiscount = 0.70;
+                    maxDiscount = 1;
+                    break;
+            }
+
+            // Фильтруем услуги по скидке
+            return services.Where(s => s.Discount >= minDiscount && s.Discount <= maxDiscount).ToList();
+        }
+
+        private List<Service> SortServices(List<Service> services, ComboBoxItem sortItem)
+        {
+            // Сортируем услуги
+            switch (sortItem.Tag)
+            {
+                case "1":
+                    return services.OrderBy(s => s.Cost).ToList(); // По возрастанию стоимости
+                case "2":
+                    return services.OrderByDescending(s => s.Cost).ToList(); // По убыванию стоимости
+                default:
+                    return services; // Без сортировки
             }
         }
+
         private void btnAdmin_Click(object sender, RoutedEventArgs e)
         {
             AdminLoginWindow loginWindow = new AdminLoginWindow();
@@ -208,19 +216,46 @@ namespace Beauty_Salon.Pages
 
         private void btnAdd_Click(object sender, RoutedEventArgs e)
         {
+            // Реализуйте логику добавления услуги здесь
             MessageBox.Show("Добавление услуги еще не реализовано.");
         }
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Удаление услуги еще не реализовано.");
+            if (servicesList.SelectedItem is Service selectedService)
+            {
+                try
+                {
+                    using (var context = Number3Entities.GetContext())
+                    {
+                        context.Service.Remove(selectedService);
+                        context.SaveChanges();
+                    }
+                    MessageBox.Show("Услуга успешно удалена!");
+                    LoadServices(); // Обновляем список услуг после удаления
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Ошибка удаления услуги: {ex.Message}");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите услугу для удаления.");
+            }
         }
 
         private void btnUpdate_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Обновление услуги еще не реализовано.");
+            if (servicesList.SelectedItem is Service selectedService)
+            {
+                // Реализуйте логику обновления услуги здесь
+                MessageBox.Show("Обновление услуги еще не реализовано.");
+            }
+            else
+            {
+                MessageBox.Show("Пожалуйста, выберите услугу для обновления.");
+            }
         }
-
-      
     }
 }

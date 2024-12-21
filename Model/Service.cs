@@ -11,7 +11,9 @@ namespace Beauty_Salon.Model
 {
     using System;
     using System.Collections.Generic;
-    
+    using System.IO;
+    using System.Windows.Media.Imaging;
+
     public partial class Service
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
@@ -28,6 +30,30 @@ namespace Beauty_Salon.Model
         public string Description { get; set; }
         public Nullable<double> Discount { get; set; }
         public string MainImagePath { get; set; }
+        public string FullImagePath
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(MainImagePath))
+                    return null;
+
+                string dbPath = MainImagePath.Replace("/", "\\").Trim();
+                return Path.Combine(@"C:\Users\elozo\OneDrive\Рабочий стол\4 курс\МДК.02.02 Инструментальные средства разработки программного обеспечения\Салон красоты - услуги\Beauty_Salon\Images\", dbPath.TrimStart('\\'));
+            }
+
+        }
+        public BitmapImage ImageSource
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(FullImagePath) && File.Exists(FullImagePath))
+                {
+                    return new BitmapImage(new Uri(FullImagePath, UriKind.Absolute));
+                }
+                return null; 
+            }
+        }
+
 
         public decimal DiscountedCost { get; set; }
         public string DiscountDescription { get; set; }
