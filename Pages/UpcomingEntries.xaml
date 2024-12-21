@@ -5,10 +5,23 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Beauty_Salon.Pages"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
       Title="UpcomingEntries">
 
     <Grid>
-        
+        <DataGrid Name="UpcomingEntriesDataGrid"
+                  AutoGenerateColumns="False"
+                  IsReadOnly="True"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Stretch"
+                  Margin="10">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Услуга" Binding="{Binding ServiceName}" Width="*" />
+                <DataGridTextColumn Header="ФИО клиента" Binding="{Binding ClientFullName}" Width="*" />
+                <DataGridTextColumn Header="Email" Binding="{Binding ClientEmail}" Width="*" />
+                <DataGridTextColumn Header="Телефон" Binding="{Binding ClientPhone}" Width="*" />
+                <DataGridTextColumn Header="Дата и время" Binding="{Binding StartTime}" Width="*" />
+                <DataGridTextColumn Header="Осталось времени" Binding="{Binding TimeLeft}" Width="*" />
+            </DataGrid.Columns>
+        </DataGrid>
     </Grid>
 </Page>
