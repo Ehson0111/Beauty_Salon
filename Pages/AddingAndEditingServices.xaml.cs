@@ -3,17 +3,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using Microsoft.Win32;
 using Beauty_Salon.Model;
 
-namespace Beauty_Salon.Windows
+namespace Beauty_Salon.Pages
 {
-    public partial class AddingAndEditingServices : Window
+    public partial class AddingAndEditingServices : Page
     {
         private Service _service; // Сервис для редактирования или добавления
         private bool isEditMode = false; // Флаг для проверки редактирования
 
-        public AddingAndEditingServices(Service service = null)
+        public AddingAndEditingServices(Service service)
         {
             InitializeComponent();
 
@@ -109,17 +110,21 @@ namespace Beauty_Salon.Windows
                 _service.Cost = decimal.Parse(tbCost.Text);
                 _service.DurationInSeconds = int.Parse(tbDuration.Text); // DurationInSeconds
                 _service.Description = tbDescription.Text;
-                _service.Discount = string.IsNullOrEmpty(tbDiscount.Text) ? 0 : decimal.Parse(tbDiscount.Text);
+
+                if (!string.IsNullOrEmpty(tbDiscount.Text))
+                {
+                    _service.Discount = double.Parse(tbDiscount.Text);
+                }
+                else
+                {
+                    _service.Discount = 0;
+                }
 
                 try
                 {
                     using (var context = Number3Entities.GetContext())
                     {
-                        if (isEditMode)
-                        {
-                            context.Service.Update(_service);
-                        }
-                        else
+                        if (!isEditMode)
                         {
                             if (context.Service.Any(s => s.Title == _service.Title))
                             {
@@ -129,9 +134,10 @@ namespace Beauty_Salon.Windows
 
                             context.Service.Add(_service);
                         }
+
                         context.SaveChanges();
                         MessageBox.Show("Услуга сохранена.");
-                        this.Close();
+                        NavigationService.GoBack();
                     }
                 }
                 catch (Exception ex)
@@ -161,7 +167,7 @@ namespace Beauty_Salon.Windows
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            NavigationService.GoBack();
         }
     }
 }

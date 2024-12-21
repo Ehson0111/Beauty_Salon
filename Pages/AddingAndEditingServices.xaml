@@ -1,7 +1,7 @@
-﻿<Window x:Class="Beauty_Salon.Windows.AddingAndEditingServices"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Adding and Editing Services" Height="450" Width="800">
+﻿<Page x:Class="Beauty_Salon.Pages.AddingAndEditingServices"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Title="Adding and Editing Services" Background="White">
     <Grid Margin="10">
         <!-- Service Title -->
         <Label Content="Название услуги:" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0"/>
@@ -40,4 +40,4 @@
             <Button Name="BtnCancel" Content="Отмена" Width="100" Click="BtnCancel_Click"/>
         </StackPanel>
     </Grid>
-</Window>
+</Page>

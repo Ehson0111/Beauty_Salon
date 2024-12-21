@@ -38,7 +38,7 @@ namespace Beauty_Salon.Model
                     return null;
 
                 string dbPath = MainImagePath.Replace("/", "\\").Trim();
-                return Path.Combine(@"C:\Users\elozo\OneDrive\Рабочий стол\4 курс\МДК.02.02 Инструментальные средства разработки программного обеспечения\Салон красоты - услуги\Beauty_Salon\Images\", dbPath.TrimStart('\\'));
+                return Path.Combine(@"C:\Users\alexw\OneDrive\Рабочий стол\Учеба\4 курс\МДК.02.02 Инструментальные средства разработки программного обеспечения\Beauty_Salon\Images\", dbPath.TrimStart('\\'));
             }
 
         }
