@@ -82,6 +82,7 @@
     <Compile Include="Converter\DiscountBackgroundConverter.cs" />
     <Compile Include="Converter\DiscountStrikethroughConverter.cs" />
     <Compile Include="Converter\DiscountVisibilityConverter.cs" />
+    <Compile Include="Converter\PriceFormatterConverter.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

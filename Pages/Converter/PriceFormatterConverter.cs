@@ -5,23 +5,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
-using System.Windows;
 
 namespace Beauty_Salon.Converter
 {
-    public class DiscountStrikethroughConverter : IValueConverter
+    public class PriceFormatterConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is double discount && discount > 0)
+            if (value is decimal price)
             {
-                return TextDecorations.Strikethrough; // Перечеркивание цены
+                return price.ToString("F2"); // Округляем до двух знаков после точки
             }
-            return null; // Без перечеркивания
+            return value?.ToString();
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            if (decimal.TryParse(value?.ToString(), out decimal result))
+            {
+                return result;
+            }
             return value;
         }
     }
