@@ -4,7 +4,6 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Beauty_Salon.Model;
-using Beauty_Salon.Windows;
 
 namespace Beauty_Salon.Pages
 {

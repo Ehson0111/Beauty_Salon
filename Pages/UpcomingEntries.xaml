@@ -8,19 +8,21 @@
       Title="UpcomingEntries">
 
     <Grid>
-        <DataGrid Name="UpcomingEntriesDataGrid"
-                  AutoGenerateColumns="False"
-                  IsReadOnly="True"
-                  HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch"
-                  Margin="10">
+
+        <DataGrid x:Name="UpcomingEntriesDataGrid" AutoGenerateColumns="False" IsReadOnly="True">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Услуга" Binding="{Binding ServiceName}" Width="*" />
-                <DataGridTextColumn Header="ФИО клиента" Binding="{Binding ClientFullName}" Width="*" />
-                <DataGridTextColumn Header="Email" Binding="{Binding ClientEmail}" Width="*" />
-                <DataGridTextColumn Header="Телефон" Binding="{Binding ClientPhone}" Width="*" />
-                <DataGridTextColumn Header="Дата и время" Binding="{Binding StartTime}" Width="*" />
-                <DataGridTextColumn Header="Осталось времени" Binding="{Binding TimeLeft}" Width="*" />
+                <DataGridTextColumn Header="Услуга" Binding="{Binding ServiceName}" />
+                <DataGridTextColumn Header="ФИО клиента" Binding="{Binding ClientFullName}" />
+                <DataGridTextColumn Header="Email" Binding="{Binding ClientEmail}" />
+                <DataGridTextColumn Header="Телефон" Binding="{Binding ClientPhone}" />
+                <DataGridTextColumn Header="Дата/Время" Binding="{Binding StartTime, StringFormat=dd.MM.yyyy HH:mm}" />
+                <DataGridTextColumn Header="Оставшееся время" Binding="{Binding TimeLeft}">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{Binding TimeLeftBrush}" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
             </DataGrid.Columns>
         </DataGrid>
     </Grid>
