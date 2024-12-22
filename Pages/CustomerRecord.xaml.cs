@@ -24,5 +24,12 @@ namespace Beauty_Salon.Pages
         {
             InitializeComponent();
         }
+
+        // Используй для перехода назад - NavigationService.Navigate(new Service_page(null));
+        // (так при возвращении на страницу данные будут обновляться)
+
+        // Работа с данными пойдет в классе ClientService
+
+        // Проверку что данные добавились можешь черех UpcomingEntries
     }
 }

@@ -160,8 +160,14 @@ namespace Beauty_Salon.Pages
             {
                 var hours = (int)timeLeft.TotalHours;
                 var minutes = timeLeft.Minutes;
-
-                TimeLeft = $"{hours} час(а/ов) {minutes} минут";
+                if(hours > 0)
+                {
+                    TimeLeft = $"{hours} час(а/ов) {minutes} минут";
+                }
+                else if(hours == 0)
+                {
+                    TimeLeft = $"{minutes} минут";
+                }
                 TimeLeftBrush = timeLeft.TotalMinutes < 60 ? Brushes.Red : Brushes.Black;
             }
         }
