@@ -5,14 +5,17 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Win32;
+using System.Windows.Media.Imaging;
 using Beauty_Salon.Model;
 
 namespace Beauty_Salon.Pages
 {
     public partial class AddingAndEditingServices : Page
     {
-        private Service _service; // Сервис для редактирования или добавления
-        private bool isEditMode = false; // Флаг для проверки редактирования
+        private Service service;
+        private List<string> additionalImages = new List<string>();
+        private string mainImagePath;
+        private double sale;
 
         public AddingAndEditingServices(Service service)
         {
@@ -20,221 +23,286 @@ namespace Beauty_Salon.Pages
 
             if (service != null)
             {
-                isEditMode = true;
-                _service = service;
-                LoadServiceData();
+                this.service = service;
+                LoadData(service);
+                tbID.Visibility = Visibility.Visible;
+                tbID.IsReadOnly = true;
             }
             else
             {
-                _service = new Service();
+                lbl.Visibility = Visibility.Collapsed;
+                tbID.Visibility = Visibility.Collapsed;
             }
         }
 
-        private void LoadServiceData()
+        private void LoadData(Service service)
         {
-            tbTitle.Text = _service.Title;
-            tbCost.Text = _service.Cost.ToString();
-            tbDuration.Text = _service.DurationInSeconds.ToString(); // DurationInSeconds
-            tbDescription.Text = _service.Description;
-            tbDiscount.Text = _service.Discount?.ToString() ?? "0";
-
-            // Загрузка основного изображения
-            if (!string.IsNullOrEmpty(_service.MainImagePath))
+            using (Number3Entities db = new Number3Entities())
             {
-                imgMain.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(_service.FullImagePath));
-            }
-
-            // Загрузка дополнительных изображений
-            spAdditionalImages.Children.Clear();
-            foreach (var imagePath in _service.ServicePhoto.Select(p => p.PhotoPath))
-            {
-                if (string.IsNullOrEmpty(imagePath))
+                var existingService = db.Service.FirstOrDefault(s => s.ID == service.ID);
+                if (existingService != null)
                 {
-                    continue; // Если путь изображения пустой, пропускаем итерацию
+                    additionalImages = existingService.ServicePhoto?
+                        .Select(p => p.PhotoPath)
+                        .ToList() ?? new List<string>();
+
+                    tbID.Text = existingService.ID.ToString();
+                    tbTitle.Text = existingService.Title;
+                    tbCost.Text = existingService.Cost.ToString("F2");
+                    tbDuration.Text = (existingService.DurationInSeconds / 60).ToString();
+                    tbDescription.Text = existingService.Description;
+                    tbDiscount.Text = existingService.Discount.HasValue
+                        ? (existingService.Discount.Value * 100).ToString("F1")
+                        : string.Empty;
+
+                    if (!string.IsNullOrWhiteSpace(existingService.MainImagePath))
+                    {
+                        imgMain.Source = existingService.ImageSource;
+                    }
+
+                    UpdateAdditionalImages();
                 }
-
-                var image = new System.Windows.Controls.Image
-                {
-                    Width = 50,
-                    Height = 50,
-                    Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(imagePath))
-                };
-                spAdditionalImages.Children.Add(image);
             }
-
         }
 
-        private void BtnSelectMainImage_Click(object sender, RoutedEventArgs e)
+        private void UpdateAdditionalImages()
         {
-            var openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.gif";
-            if (openFileDialog.ShowDialog() == true)
+            spAdditionalImages.Children.Clear();
+
+            foreach (string imagePath in additionalImages)
             {
-                _service.MainImagePath = openFileDialog.FileName;
-                imgMain.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(openFileDialog.FileName));
+                StackPanel panel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(5) };
+
+                Image image = new Image
+                {
+                    Source = new BitmapImage(new Uri(imagePath, UriKind.Absolute)),
+                    Width = 100,
+                    Height = 100,
+                    Margin = new Thickness(5)
+                };
+
+                Button removeButton = new Button
+                {
+                    Content = "Удалить",
+                    Tag = imagePath,
+                    Margin = new Thickness(5)
+                };
+                removeButton.Click += BtnRemoveAdditionalImage_Click;
+
+                panel.Children.Add(image);
+                panel.Children.Add(removeButton);
+                spAdditionalImages.Children.Add(panel);
             }
         }
 
         private void BtnAddAdditionalImage_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Image Files|*.jpg;*.jpeg;*.png;*.gif";
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "Image Files|*.jpg;*.jpeg;*.png",
+                Multiselect = true,
+                Title = "Выберите дополнительные изображения"
+            };
+
             if (openFileDialog.ShowDialog() == true)
             {
-                var servicePhoto = new ServicePhoto
+                foreach (string imagePath in openFileDialog.FileNames)
                 {
-                    PhotoPath = openFileDialog.FileName,
-                    ServiceID = _service.ID // Привязка к сервису
-                };
+                    string destinationPath = Path.Combine(Environment.CurrentDirectory, "Images", Path.GetFileName(imagePath));
+                    if (!Directory.Exists(Path.GetDirectoryName(destinationPath)))
+                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
 
-                _service.ServicePhoto.Add(servicePhoto);
-                var image = new System.Windows.Controls.Image
-                {
-                    Width = 50,
-                    Height = 50,
-                    Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(openFileDialog.FileName))
-                };
-                spAdditionalImages.Children.Add(image);
+                    File.Copy(imagePath, destinationPath, true);
+                    additionalImages.Add(destinationPath);
+                }
+                UpdateAdditionalImages();
             }
         }
 
         private void BtnRemoveAdditionalImage_Click(object sender, RoutedEventArgs e)
         {
-            if (_service.ServicePhoto.Count > 0)
+            if (sender is Button removeButton && removeButton.Tag is string imagePath)
             {
-                var lastImage = _service.ServicePhoto.Last();
-                _service.ServicePhoto.Remove(lastImage);
-                spAdditionalImages.Children.RemoveAt(spAdditionalImages.Children.Count - 1);
-            }
-        }
+                // Удаление из списка дополнительных изображений
+                additionalImages.Remove(imagePath);
 
-        //private void BtnSave_Click(object sender, RoutedEventArgs e)
-        //{
-        //    if (ValidateFields())
-        //    {
-        //        _service.Title = tbTitle.Text;
-        //        _service.Cost = decimal.Parse(tbCost.Text);
-        //        _service.DurationInSeconds = int.Parse(tbDuration.Text); // DurationInSeconds
-        //        _service.Description = tbDescription.Text;
-
-        //        if (!string.IsNullOrEmpty(tbDiscount.Text))
-        //        {
-        //            _service.Discount = double.Parse(tbDiscount.Text);
-        //        }
-        //        else
-        //        {
-        //            _service.Discount = 0;
-        //        }
-
-        //        try
-        //        {
-        //            using (var context = Number3Entities.GetContext())
-        //            {
-        //                if (!isEditMode)
-        //                {
-        //                    if (context.Service.Any(s => s.Title == _service.Title))
-        //                    {
-        //                        MessageBox.Show("Услуга с таким названием уже существует.");
-        //                        return;
-        //                    }
-
-        //                    context.Service.Add(_service);
-        //                }
-
-        //                context.SaveChanges();
-        //                MessageBox.Show("Услуга сохранена.");
-        //                NavigationService.GoBack();
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            MessageBox.Show($"Ошибка сохранения: {ex.Message}");
-        //        }
-        //    }
-        //}
-        private void BtnSave_Click(object sender, RoutedEventArgs e)
-        {
-            if (ValidateFields())
-            {
-                _service.Title = tbTitle.Text;
-                _service.Cost = decimal.Parse(tbCost.Text);
-                _service.DurationInSeconds = int.Parse(tbDuration.Text);
-                _service.Description = tbDescription.Text;
-                _service.Discount = string.IsNullOrEmpty(tbDiscount.Text) ? 0 : double.Parse(tbDiscount.Text);
-
-                try
+                // Удаление из базы данных
+                using (var db = new Number3Entities())
                 {
-                    // Создаем новый контекст только для сохранения
-                    using (var context = Number3Entities.GetContext())
+                    var photoToRemove = db.ServicePhoto.FirstOrDefault(p => p.PhotoPath == imagePath);
+                    if (photoToRemove != null)
                     {
-                        if (!isEditMode)
-                        {
-                            //if (context.Service.Any(s => s.Title == _service.Title))
-                            //{
-                            //    MessageBox.Show("Услуга с таким названием уже существует.");
-                            //    return;
-                            //}
-
-                            context.Service.Add(_service);
-                        }
-                        else
-                        {
-                            // Обновляем данные при редактировании
-                            var serviceToUpdate = context.Service.Find(_service.ID);
-                            if (serviceToUpdate != null)
-                            {
-                                serviceToUpdate.Title = _service.Title;
-                                serviceToUpdate.Cost = _service.Cost;
-                                serviceToUpdate.DurationInSeconds = _service.DurationInSeconds;
-                                serviceToUpdate.Description = _service.Description;
-                                serviceToUpdate.Discount = _service.Discount;
-                                serviceToUpdate.MainImagePath = _service.MainImagePath;
-
-                                // Обновление фотографий
-                                // Очистка текущих фотографий и добавление новых
-                                serviceToUpdate.ServicePhoto.Clear();
-                                foreach (var photo in _service.ServicePhoto)
-                                {
-                                    serviceToUpdate.ServicePhoto.Add(photo);
-                                }
-
-                            }
-                        }
-
-                        context.SaveChanges();
-                        MessageBox.Show("Услуга сохранена.");
-                        NavigationService?.GoBack(); // Если страница используется в Frame
+                        db.ServicePhoto.Remove(photoToRemove);
+                        db.SaveChanges();
                     }
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Ошибка сохранения: {ex.Message}");
-                }
+
+                // Обновление отображения
+                UpdateAdditionalImages();
             }
         }
 
 
-        private bool ValidateFields()
+        private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
-            // Валидация полей
-            if (string.IsNullOrEmpty(tbTitle.Text) || string.IsNullOrEmpty(tbCost.Text) || string.IsNullOrEmpty(tbDuration.Text))
+            if (string.IsNullOrWhiteSpace(tbTitle.Text) ||
+                string.IsNullOrWhiteSpace(tbCost.Text) ||
+                string.IsNullOrWhiteSpace(tbDuration.Text))
             {
-                MessageBox.Show("Все обязательные поля должны быть заполнены.");
-                return false;
+                MessageBox.Show("Заполните все обязательные поля: название, стоимость, длительность.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            if (!decimal.TryParse(tbCost.Text, out decimal cost) || cost < 0)
+            {
+                MessageBox.Show("Стоимость должна быть положительным числом.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
 
             if (!int.TryParse(tbDuration.Text, out int duration) || duration <= 0 || duration > 240)
             {
-                MessageBox.Show("Длительность услуги должна быть положительным числом и не превышать 4 часов.");
-                return false;
+                MessageBox.Show("Длительность должна быть положительным числом и не превышать 240 минут.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
             }
 
-            return true;
+            if (!string.IsNullOrWhiteSpace(tbDiscount.Text) &&
+                (!decimal.TryParse(tbDiscount.Text, out decimal discount) || discount < 0 || discount > 100))
+            {
+                MessageBox.Show("Скидка должна быть числом от 0 до 100.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+
+            double a = double.Parse(tbDiscount.Text);
+
+            if (service != null) // Редактирование услуги
+            {
+                var existingService = Number3Entities.GetContext().Service.FirstOrDefault(s => s.ID == service.ID);
+                if (existingService != null)
+                {
+                    existingService.Title = tbTitle.Text;
+                    existingService.Cost = cost;
+                    existingService.DurationInSeconds = duration * 60;
+                    existingService.Description = tbDescription.Text;
+
+                    if (a > 0.0)
+                    {
+                        sale = a / 100;
+                        existingService.Discount = sale;
+                    }
+                    else
+                    {
+                        existingService.Discount = 0;
+                    }
+
+                    if (!string.IsNullOrEmpty(mainImagePath))
+                        existingService.MainImagePath = mainImagePath;
+
+                    if (additionalImages.Count > 0)
+                    {
+                        // Удаляем старые изображения, если нужно
+                        var existingPhotos = Number3Entities.GetContext().ServicePhoto.Where(sp => sp.ServiceID == existingService.ID).ToList();
+                        Number3Entities.GetContext().ServicePhoto.RemoveRange(existingPhotos);
+
+                        // Добавляем новые изображения
+                        foreach (string image in additionalImages)
+                        {
+                            Number3Entities.GetContext().ServicePhoto.Add(new ServicePhoto
+                            {
+                                ID = Number3Entities.GetContext().ServicePhoto.Any() ? Number3Entities.GetContext().ServicePhoto.Max(c => c.ID) + 1 : 1,
+                                ServiceID = existingService.ID,
+                                PhotoPath = image
+                            });
+                        }
+                        MessageBox.Show("Дополнительные фотографии услуг сохранены!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+
+                    Number3Entities.GetContext().SaveChanges();
+                    MessageBox.Show("Услуга успешно обновлена!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+            }
+            else if (service == null)
+            {
+                if (Number3Entities.GetContext().Service.Any(s => s.Title == tbTitle.Text))
+                {
+                    MessageBox.Show("Услуга с таким названием уже существует.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(mainImagePath))
+                {
+                    MessageBox.Show("Выберите главное изображение.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                if (a > 0.0)
+                {
+                    sale = a / 100;
+                }
+                else
+                {
+                    sale = 0.0;
+                }
+
+                // Создание новой услуги
+                var newService = new Service
+                {
+                    ID = Number3Entities.GetContext().Service.Any() ? Number3Entities.GetContext().Service.Max(c => c.ID) + 1 : 1,
+                    Title = tbTitle.Text,
+                    Cost = cost,
+                    DurationInSeconds = duration * 60,
+                    Description = tbDescription.Text,
+                    Discount = sale,
+                    MainImagePath = mainImagePath
+                };
+
+                Number3Entities.GetContext().Service.Add(newService);
+                Number3Entities.GetContext().SaveChanges();
+
+                // Добавление дополнительных фотографий
+                if (additionalImages.Count > 0)
+                {
+                    foreach (string image in additionalImages)
+                    {
+                        Number3Entities.GetContext().ServicePhoto.Add(new ServicePhoto
+                        {
+                            ID = Number3Entities.GetContext().ServicePhoto.Any() ? Number3Entities.GetContext().ServicePhoto.Max(c => c.ID) + 1 : 1,
+                            ServiceID = newService.ID,
+                            PhotoPath = image
+                        });
+                    }
+
+                    Number3Entities.GetContext().SaveChanges();
+                    MessageBox.Show("Дополнительные фотографии услуг сохранены!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+
+                MessageBox.Show("Услуга успешно добавлена!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+
+
+            NavigationService.Navigate(new Service_page(null));
         }
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService.GoBack();
+            NavigationService.Navigate(new Service_page(null));
+        }
+
+        private void BtnSelectMainImage_Click(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Filter = "Image Files|*.jpg;*.jpeg;*.png",
+                Title = "Выберите главное изображение"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                mainImagePath = openFileDialog.FileName;
+                imgMain.Source = new BitmapImage(new Uri(mainImagePath, UriKind.Absolute));
+            }
         }
     }
 }
+
+

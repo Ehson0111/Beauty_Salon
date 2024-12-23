@@ -5,7 +5,6 @@ using System.Windows;
 using System.Windows.Controls;
 using Beauty_Salon.Model;
 
-
 namespace Beauty_Salon.Pages
 {
     public partial class Service_page : Page
@@ -19,6 +18,8 @@ namespace Beauty_Salon.Pages
         public Service_page(Frame frame)
         {
             InitializeComponent();
+            this.Loaded += Page_Loaded;
+            LoadServices();
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -99,10 +100,7 @@ namespace Beauty_Salon.Pages
         {
             try
             {
-                using (var context = Number3Entities.GetContext())
-                {
-                    return context.Service.ToList();
-                }
+                return Number3Entities.GetContext().Service.ToList();
             }
             catch (Exception ex)
             {
@@ -219,7 +217,6 @@ namespace Beauty_Salon.Pages
         {
 
             NavigationService.Navigate(new AddingAndEditingServices(null));
-            //MessageBox.Show("Добавление услуги еще не реализовано.");
         }
 
         private void btnDelete_Click(object sender, RoutedEventArgs e)
@@ -230,10 +227,21 @@ namespace Beauty_Salon.Pages
                 {
                     using (var context = Number3Entities.GetContext())
                     {
+                        // Удаляем связанные фотографии услуги
+                        var photosToDelete = context.ServicePhoto.Where(p => p.ServiceID == selectedService.ID).ToList();
+                        if (photosToDelete.Count > 0)
+                        {
+                            context.ServicePhoto.RemoveRange(photosToDelete);
+                        }
+
+                        // Удаляем саму услугу
                         context.Service.Remove(selectedService);
+
+                        // Сохраняем изменения в базе данных
                         context.SaveChanges();
                     }
-                    MessageBox.Show("Услуга успешно удалена!");
+
+                    MessageBox.Show("Услуга и связанные фотографии успешно удалены!");
                     LoadServices(); // Обновляем список услуг после удаления
                 }
                 catch (Exception ex)
@@ -252,7 +260,6 @@ namespace Beauty_Salon.Pages
             if (servicesList.SelectedItem is Service selectedService)
             {
                 NavigationService.Navigate(new AddingAndEditingServices(selectedService));
-                MessageBox.Show("Обновление услуги еще не реализовано.");
             }
             else
             {
