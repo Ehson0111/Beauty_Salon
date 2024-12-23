@@ -48,6 +48,11 @@ namespace Beauty_Salon.Pages
             spAdditionalImages.Children.Clear();
             foreach (var imagePath in _service.ServicePhoto.Select(p => p.PhotoPath))
             {
+                if (string.IsNullOrEmpty(imagePath))
+                {
+                    continue; // Если путь изображения пустой, пропускаем итерацию
+                }
+
                 var image = new System.Windows.Controls.Image
                 {
                     Width = 50,
@@ -56,6 +61,7 @@ namespace Beauty_Salon.Pages
                 };
                 spAdditionalImages.Children.Add(image);
             }
+
         }
 
         private void BtnSelectMainImage_Click(object sender, RoutedEventArgs e)
@@ -102,42 +108,102 @@ namespace Beauty_Salon.Pages
             }
         }
 
+        //private void BtnSave_Click(object sender, RoutedEventArgs e)
+        //{
+        //    if (ValidateFields())
+        //    {
+        //        _service.Title = tbTitle.Text;
+        //        _service.Cost = decimal.Parse(tbCost.Text);
+        //        _service.DurationInSeconds = int.Parse(tbDuration.Text); // DurationInSeconds
+        //        _service.Description = tbDescription.Text;
+
+        //        if (!string.IsNullOrEmpty(tbDiscount.Text))
+        //        {
+        //            _service.Discount = double.Parse(tbDiscount.Text);
+        //        }
+        //        else
+        //        {
+        //            _service.Discount = 0;
+        //        }
+
+        //        try
+        //        {
+        //            using (var context = Number3Entities.GetContext())
+        //            {
+        //                if (!isEditMode)
+        //                {
+        //                    if (context.Service.Any(s => s.Title == _service.Title))
+        //                    {
+        //                        MessageBox.Show("Услуга с таким названием уже существует.");
+        //                        return;
+        //                    }
+
+        //                    context.Service.Add(_service);
+        //                }
+
+        //                context.SaveChanges();
+        //                MessageBox.Show("Услуга сохранена.");
+        //                NavigationService.GoBack();
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            MessageBox.Show($"Ошибка сохранения: {ex.Message}");
+        //        }
+        //    }
+        //}
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
             if (ValidateFields())
             {
                 _service.Title = tbTitle.Text;
                 _service.Cost = decimal.Parse(tbCost.Text);
-                _service.DurationInSeconds = int.Parse(tbDuration.Text); // DurationInSeconds
+                _service.DurationInSeconds = int.Parse(tbDuration.Text);
                 _service.Description = tbDescription.Text;
-
-                if (!string.IsNullOrEmpty(tbDiscount.Text))
-                {
-                    _service.Discount = double.Parse(tbDiscount.Text);
-                }
-                else
-                {
-                    _service.Discount = 0;
-                }
+                _service.Discount = string.IsNullOrEmpty(tbDiscount.Text) ? 0 : double.Parse(tbDiscount.Text);
 
                 try
                 {
+                    // Создаем новый контекст только для сохранения
                     using (var context = Number3Entities.GetContext())
                     {
                         if (!isEditMode)
                         {
-                            if (context.Service.Any(s => s.Title == _service.Title))
-                            {
-                                MessageBox.Show("Услуга с таким названием уже существует.");
-                                return;
-                            }
+                            //if (context.Service.Any(s => s.Title == _service.Title))
+                            //{
+                            //    MessageBox.Show("Услуга с таким названием уже существует.");
+                            //    return;
+                            //}
 
                             context.Service.Add(_service);
+                        }
+                        else
+                        {
+                            // Обновляем данные при редактировании
+                            var serviceToUpdate = context.Service.Find(_service.ID);
+                            if (serviceToUpdate != null)
+                            {
+                                serviceToUpdate.Title = _service.Title;
+                                serviceToUpdate.Cost = _service.Cost;
+                                serviceToUpdate.DurationInSeconds = _service.DurationInSeconds;
+                                serviceToUpdate.Description = _service.Description;
+                                serviceToUpdate.Discount = _service.Discount;
+                                serviceToUpdate.MainImagePath = _service.MainImagePath;
+
+                                // Обновление фотографий
+                                // Очистка текущих фотографий и добавление новых
+                                serviceToUpdate.ServicePhoto.Clear();
+                                foreach (var photo in _service.ServicePhoto)
+                                {
+                                    serviceToUpdate.ServicePhoto.Add(photo);
+                                }
+
+                            }
                         }
 
                         context.SaveChanges();
                         MessageBox.Show("Услуга сохранена.");
-                        NavigationService.GoBack();
+                        NavigationService?.GoBack(); // Если страница используется в Frame
                     }
                 }
                 catch (Exception ex)
@@ -146,6 +212,7 @@ namespace Beauty_Salon.Pages
                 }
             }
         }
+
 
         private bool ValidateFields()
         {
