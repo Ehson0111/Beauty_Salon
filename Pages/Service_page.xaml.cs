@@ -45,6 +45,7 @@ namespace Beauty_Salon.Pages
                     service.DiscountDescription = service.Discount.HasValue && service.Discount > 0
                         ? $"Скидка: {service.Discount:P0}"
                         : "Без скидки";
+
                 }
 
                 ApplyFilters(); // Применяем фильтры после загрузки
@@ -223,6 +224,12 @@ namespace Beauty_Salon.Pages
         {
             if (servicesList.SelectedItem is Service selectedService)
             {
+
+                if (HasUpcomingOrPastRecords(selectedService.ID))
+                {
+                    MessageBox.Show($"Услуга '{selectedService.Title}' не может быть удалена, так как на неё имеются записи.");
+                    return;
+                }
                 try
                 {
                     using (var context = Number3Entities.GetContext())
@@ -254,7 +261,11 @@ namespace Beauty_Salon.Pages
                 MessageBox.Show("Пожалуйста, выберите услугу для удаления.");
             }
         }
-
+        private bool HasUpcomingOrPastRecords(int serviceId)
+        {
+            // Проверка записи на услуги
+            return Number3Entities.GetContext().ClientService.Any(r => r.ServiceID == serviceId);
+        }
         private void btnUpdate_Click(object sender, RoutedEventArgs e)
         {
             if (servicesList.SelectedItem is Service selectedService)
@@ -276,5 +287,7 @@ namespace Beauty_Salon.Pages
         {
             NavigationService.Navigate(new UpcomingEntries());
         }
+
+
     }
 }

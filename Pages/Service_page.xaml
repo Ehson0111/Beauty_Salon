@@ -15,6 +15,7 @@
         <converter:DiscountStrikethroughConverter x:Key="DiscountStrikethroughConverter" />
         <converter:DiscountBackgroundConverter x:Key="DiscountBackgroundConverter" />
         <converter:DiscountToVisibilityConverter x:Key="DiscountToVisibilityConverter" />
+        <converter:SecondsToMinutesConverter x:Key="SecondsToMinutesConverter" />
     </Page.Resources>
 
     <Grid>
@@ -89,8 +90,8 @@
                                         </TextBlock.Style>
                                     </TextBlock>
                                 </StackPanel>
+            <TextBlock Text="{Binding DurationInSeconds, Converter={StaticResource SecondsToMinutesConverter}}" Foreground="Gray" />
 
-                                <TextBlock Text="{Binding Duration, StringFormat={}{0} минут}" Foreground="Gray" />
                                 <TextBlock Text="{Binding DiscountDescription}" Foreground="Green" FontSize="12" />
                             </StackPanel>
                         </StackPanel>
