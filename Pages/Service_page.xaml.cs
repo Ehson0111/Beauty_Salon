@@ -280,8 +280,16 @@ namespace Beauty_Salon.Pages
 
         private void btnWrite_Click(object sender, RoutedEventArgs e)
         {
-            NavigationService.Navigate(new CustomerRecord());
+            if (servicesList.SelectedItem is Service selectedService)
+            {
+                NavigationService.Navigate(new CustomerRecord(selectedService));
+            }
+            else
+            {
+                MessageBox.Show("Услуга не выбрана. Выберите услугу для записи, пожалуйста.");
+            }
         }
+
 
         private void btnRecords_Click(object sender, RoutedEventArgs e)
         {
